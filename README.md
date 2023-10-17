@@ -1,2 +1,0 @@
-# demographic-analyzer-front
-frontend
