@@ -24,7 +24,7 @@ try:
     for index in range(len(emails)):
         credentials['usernames'][usernames[index]] = {'name': emails[index], 'password': passwords[index]}
 
-    Authenticator = stauth.Authenticate(credentials, cookie_name='Streamlit', key='abcdef', cookie_expiry_days=4)
+    Authenticator = stauth.Authenticate(credentials, cookie_name='Streamlit', key='abcdef', cookie_expiry_days=0)
 
     email, authentication_status, username = Authenticator.login(':green[Login]', 'main')
 
@@ -48,7 +48,13 @@ try:
                     
                     """
                 )
-
+                hide_streamlit_style = """
+                    <style>
+                        #MainMenu {visibility: hidden;}
+                        footer {visibility: hidden;}
+                    </style>
+                """
+                st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
 
                 data = pd.read_csv("data_rostat.csv", skiprows=2, encoding="cp1251")
 
@@ -69,9 +75,9 @@ try:
             else:
                 with info:
                     st.warning('Please feed in your credentials')
-        else:
-            with info:
-                st.warning('Username does not exist, Please Sign up')
+        # else:
+        #     with info:
+        #         st.warning('Username does not exist, Please Sign up')
 
 
 except:
