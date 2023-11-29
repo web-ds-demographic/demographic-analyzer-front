@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from test_data.alg import get_pred
+from components.file_pred import run_file_prediction
+from components.sources_pred import run_source_prediction
 
 # Стилизация страницы
 st.markdown("""
@@ -15,28 +17,6 @@ st.markdown("""
         #stDecoration {display:none;}
     </style>
 """, unsafe_allow_html=True)
-
-st.title("Прогнозирование демографических данных")
-
-countries = ["Senegal", "Russia"]
-selected_country = st.selectbox("Выберите страну из доступных:", countries)
-
-if selected_country == "Senegal":
-    file_path = "./test_data/senegal.csv"
-else:
-    file_path = "./test_data/russia.csv"
-
-df = pd.read_csv(file_path)
-
-
-
-years_to_forecast = st.slider("Выберите количество лет для прогнозирования:", 1, 30, 5)
-
-# Получение прогноза
-result = get_pred(df, years_to_forecast)
-
-# Выбор отображаемых столбцов
-selected_columns = st.multiselect("Выберите столбцы для отображения:", result.columns)
 
 # Информация о столбцах
 column_info = {
@@ -52,13 +32,16 @@ column_info = {
     'Qt': 'Показатель изменчивости'
 }
 
-# Отображение информации о столбцах
-for col in selected_columns:
-    st.write(f"**{col}**: {column_info.get(col, 'Нет информации')}")
 
+st.title("Прогнозирование демографических данных")
+selected_option = st.selectbox("Выберите способ:", ["Загрузка файла", "Использовать имеющиеся источники для стран"])
+if selected_option == "Загрузка файла":
+    run_file_prediction()
+if selected_option == "Использовать имеющиеся источники для стран":
+    run_source_prediction()
 
-st.subheader("Результат прогнозирования:")
-st.write(result.set_index('Year'))
-fig = px.line(result, x='Year', y=selected_columns, title='Прогноз демографических данных')
-fig.update_layout(width=900, height=500, xaxis_title='Год', yaxis_title='Значение')
-st.plotly_chart(fig)
+    
+        
+
+        
+
