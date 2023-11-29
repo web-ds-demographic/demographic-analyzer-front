@@ -18,6 +18,7 @@ def run_source_prediction():
 
     # Получение прогноза
     result = get_pred(df, years_to_forecast)
+    result = result.drop(columns=['Qt'])
 
     # Выбор отображаемых столбцов
     selected_columns = st.multiselect("Выберите столбцы для отображения:", result.columns)
