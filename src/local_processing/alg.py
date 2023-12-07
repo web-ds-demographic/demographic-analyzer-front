@@ -83,6 +83,6 @@ def get_pred(df_bonus,years):
   df_bonus = df_bonus.assign(Qt=tau)
   return df_bonus
 
-# df_bonus = pd.read_csv("test.csv")
+# df_bonus = pd.read_csv("senegal.csv")
 # df_bonus=get_pred(df_bonus,10)
 # df_bonus.to_excel("output.xlsx")

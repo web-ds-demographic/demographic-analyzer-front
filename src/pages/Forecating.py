@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
-from test_data.alg import get_pred
 from components.file_pred import run_file_prediction
 from components.sources_pred import run_source_prediction
 
@@ -32,11 +31,12 @@ column_info = {
 
 
 st.title(":chart_with_upwards_trend: Прогнозирование демографических данных")
-selected_option = st.selectbox("Выберите способ:", ["Загрузка файла", "Использовать имеющиеся источники для стран"])
-if selected_option == "Загрузка файла":
-    run_file_prediction()
+selected_option = st.selectbox("Выберите способ:", ["Использовать имеющиеся источники для стран", "Загрузка файла"])
 if selected_option == "Использовать имеющиеся источники для стран":
     run_source_prediction()
+if selected_option == "Загрузка файла":
+    run_file_prediction()
+
 
     
         

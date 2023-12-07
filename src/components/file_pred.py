@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.subplots as sp
 import plotly.graph_objects as go
 import plotly.express as px
-from test_data.alg import get_pred
+from local_processing.alg import get_pred
 
 def run_file_prediction():
     uploaded_file = st.file_uploader("Выберите .csv файл")
@@ -32,7 +32,7 @@ def run_file_prediction():
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
 
-        years_to_forecast = st.slider("Выберите количество лет для прогнозирования:", 1, 100, 5)
+        years_to_forecast = int(st.number_input("Введите количество лет для прогнозирования", value=5, placeholder="Введите число..."))
 
         result = get_pred(df, years_to_forecast)
         result = result.drop(columns=['Qt'])
