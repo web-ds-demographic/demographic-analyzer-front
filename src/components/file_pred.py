@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 from local_processing.alg import get_pred
 
-def run_file_prediction():
+async def run_file_prediction():
     uploaded_file = st.file_uploader("Выберите .csv файл")
     st.markdown(
         """
