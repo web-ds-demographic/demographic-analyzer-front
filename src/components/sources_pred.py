@@ -12,15 +12,14 @@ async def fetch_data():
         
         if selected_source != 'source':
             regions = await get_regions_by_source(selected_source)
-            reg_full = get_country_names_by_iso2(regions)
-            selected_region = st.selectbox("Выберите регион из доступных:", list(reg_full.values()))
-            selected_region = find_key_by_value(reg_full, selected_region)
+            selected_region = st.selectbox("Выберите регион из доступных:", list(regions.values()))
+            selected_region = find_key_by_value(regions, selected_region)
 
             minmax_date = await get_minmax_date(selected_region, selected_source)
             if minmax_date is None:
                 st.markdown(f"Извините. Данная страна недоступна!")
             else:
-                st.markdown(f"Данные будут проанализованы на доступных датах {minmax_date}")
+                st.markdown(f"Данные будут проанализованы на доступных датах **{minmax_date['start']}** - **{minmax_date['end']}**")
 
             years_to_forecast = int(st.number_input("Введите количество лет для прогнозирования", value=5, placeholder="Введите число..."))
             
@@ -33,7 +32,7 @@ async def fetch_data():
 
             return data
         else:
-            st.warning("Выберите источник данных.")
+            st.warning("Выберите источник данных.", icon="⚠️")
             return None
         
 

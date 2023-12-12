@@ -3,8 +3,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from http_req.api_requests import get_source_names, get_regions_by_source, get_minmax_date, post_demography_prediction
-from http_req.process_data import find_key_by_value, get_country_names_by_iso2
-
+from http_req.process_data import find_key_by_value
 
 async def run_source_data():
     st.title(":chart_with_upwards_trend: Исходные данные источников")
@@ -13,9 +12,14 @@ async def run_source_data():
     data = None
     if selected_source != 'source':
         regions = await get_regions_by_source(selected_source)
-        reg_full = get_country_names_by_iso2(regions)
-        selected_region = st.selectbox("Выберите регион из доступных:", list(reg_full.values()))
-        selected_region = find_key_by_value(reg_full, selected_region)
+        selected_region = st.selectbox("Выберите регион из доступных:", list(regions.values()))
+        selected_region = find_key_by_value(regions, selected_region)
+
+        minmax_date = await get_minmax_date(selected_region, selected_source)
+        if minmax_date is None:
+            st.markdown(f"Извините. Данная страна недоступна!")
+        else:
+            st.markdown(f"Доступные промежуток данных **{minmax_date['start']}** - **{minmax_date['end']}**")
 
         minmax_date = await get_minmax_date(selected_region, selected_source)
         
