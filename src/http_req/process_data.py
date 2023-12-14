@@ -14,3 +14,12 @@ def find_key_by_value(dictionary, target_value):
 #         country_name = country_info['name'] if not country_info.empty else f"Country with code '{iso2_code}' not found."
 #         result[iso2_code] = country_name
 #     return result
+
+def extract_years(minmax_date):
+    start_date_str = minmax_date['start']
+    end_date_str = minmax_date['end']
+
+    start_year = int(start_date_str.split('-')[0])
+    end_year = int(end_date_str.split('-')[0])
+
+    return start_year, end_year

@@ -14,7 +14,7 @@ async def run_source_data():
         regions = await get_regions_by_source(selected_source)
         selected_region = st.selectbox("Выберите регион из доступных:", list(regions.values()))
         selected_region = find_key_by_value(regions, selected_region)
-
+        
         minmax_date = await get_minmax_date(selected_region, selected_source)
         if minmax_date is None:
             st.markdown(f"Извините. Данная страна недоступна!")

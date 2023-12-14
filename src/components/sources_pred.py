@@ -2,8 +2,9 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 from http_req.api_requests import get_source_names, get_regions_by_source, get_minmax_date, post_demography_prediction
-from http_req.process_data import find_key_by_value, get_country_names_by_iso2
+from http_req.process_data import find_key_by_value
 from io import BytesIO
+import re
 
 async def fetch_data():
     with st.spinner('Загрузка...'):
@@ -14,14 +15,27 @@ async def fetch_data():
             regions = await get_regions_by_source(selected_source)
             selected_region = st.selectbox("Выберите регион из доступных:", list(regions.values()))
             selected_region = find_key_by_value(regions, selected_region)
-
+            variant = st.radio( "Выберите вид прогнозирования:", ["Ретростпективное", "Обычное"],
+            captions = ["Выбрать определенный период прогнозирования", "Выбрать весь период"])
             minmax_date = await get_minmax_date(selected_region, selected_source)
+            data = None
+            years_to_forecast = None
             if minmax_date is None:
                 st.markdown(f"Извините. Данная страна недоступна!")
             else:
-                st.markdown(f"Данные будут проанализованы на доступных датах **{minmax_date['start']}** - **{minmax_date['end']}**")
+                if variant=="Обычное": 
+                    st.markdown(f"Данные будут проанализованы на доступных датах **{minmax_date['start']}** - **{minmax_date['end']}**")
+                    years_to_forecast = int(st.number_input("Введите количество лет для прогнозирования", value=5, placeholder="Введите число..."))
 
-            years_to_forecast = int(st.number_input("Введите количество лет для прогнозирования", value=5, placeholder="Введите число..."))
+                if variant=="Ретростпективное":
+                    start_year = int(re.search(r'\d{4}', minmax_date["start"]).group())
+                    end_year = int(re.search(r'\d{4}', minmax_date["end"]).group())
+                    period_of_prediction = st.slider('Miles', min_value=start_year, max_value=end_year, value=[start_year, end_year])
+                    minmax_date = {"start":f"{period_of_prediction[0]}-01-01", "end":f"{period_of_prediction[1]}-01-01"}
+                    st.markdown(f"Данные будут проанализованы на выбранных датах **{minmax_date['start']}** - **{minmax_date['end']}**")
+                    years_to_forecast = int(st.number_input("Введите количество лет для прогнозирования", value=5, placeholder="Введите число..."))
+
+                    
             
             data = {
                 "region": selected_region,
@@ -69,7 +83,7 @@ async def run_source_prediction():
                 )
             with col2:
                 excel_data = BytesIO()
-                df.to_excel(excel_data, index=False)  # Removed engine='xlsxwriter'
+                df.to_excel(excel_data, index=False)
                 excel_data.seek(0)
                 st.download_button(
                     label="Download Excel",
@@ -78,7 +92,30 @@ async def run_source_prediction():
                     key="download-excel"
                 )
             
+            minmax_date = await get_minmax_date(data["region"], data["source"])
+            minmax_date["start"] = data['inputDataPeriod']["end"]
+            _, tdata = await post_demography_prediction({
+                "region": data["region"],
+                "source": data["source"],
+                "predict_years_count": 0,
+                "inputDataPeriod": minmax_date,
+            })
+            try:
+                df_acc = pd.DataFrame(tdata)
+
+                merged_df = pd.merge(df, df_acc, on='Year', suffixes=('_df', '_df_acc'))
+
+                merged_df['Accuracy(%)'] = (1 - abs(merged_df['N(t)_df_acc'] - merged_df['N(t)_df']) / merged_df['N(t)_df_acc']) * 100
+
+                error_df = merged_df[['Year', 'Accuracy(%)']].copy()
+                with st.expander("Точноть прогнозирования в %"):
+                    st.dataframe(error_df, use_container_width=True)
+            except:
+                st.warning("Точность не может быть вычислена для прогнозирования на будущее!")
+
             
+
+
             with st.expander(":information_source: Информация"):
                 st.markdown("""
                 | Столбец  | Описание                                |
@@ -95,7 +132,6 @@ async def run_source_prediction():
                 """)
             selected_plot_type = st.selectbox("Выберите тип графика:", ['Линейный график', 'Точечный график'])
             
-            # Display graph
             await visualize_data(df, selected_plot_type)
         else:
             st.warning("Введите данные!")
